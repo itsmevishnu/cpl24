@@ -1,0 +1,66 @@
+{% extends "pages/base.html" %}
+
+{% block content %}
+          <div class="card">
+            <div class="rounded-top text-white d-flex flex-row" style="background-color: #000; height:200px;">
+              <div class="ms-4 mt-5 d-flex flex-column" style="width: 150px;">
+                <img src="{{MEDIA_URL}}{{ player.photo }}"
+                  alt="{{ player.name }}" class="img-fluid img-thumbnail mt-4 mb-2"
+                  style="width: 150px; z-index: 1">
+              </div>
+              <div class="ms-3" style="margin-top: 130px;">
+                <h5>{{ player.name }}</h5>
+                <p>{{ player.get_type_display }}</p>
+              </div>
+            </div>
+            <div class="p-4 text-black" style="background-color: #f8f9fa;">
+              <div class="d-flex justify-content-end text-center py-1">
+                <div>
+                  <p class="mb-1 h5">{{ player.basic_amount}}</p>
+                  <p class="small text-muted mb-0">Basic Amount</p>
+                </div>
+                <div class="px-3">
+                  <p class="mb-1 h5">
+                    {% if player.is_external %}
+                        <i class="fa-solid fa-plane-up"></i>
+                    {% else %}
+                        <i class="fa-solid fa-house"></i>
+                    {% endif %}
+                  </p>
+                  <p class="small text-muted mb-0">Home/Other</p>
+                </div>
+                <div>
+                  <p class="mb-1 h5">{{ player.cpl_id }}</p>
+                  <p class="small text-muted mb-0">CPL ID</p>
+                </div>
+              </div>
+              <h4>Bidding for {{ player.name }}</h4>
+                <form class="row g-3" style="text-align: left;" method="POST" action="{% url 'save_bid' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="player" value="{{ player.id }}">
+                  <input type="hidden" name="next" value="{{ request.path }}">
+                  <div class="col-12">
+                    <label for="team" class="form-label">Team</label>
+                    <select required class="form-select" id="team" name="team" aria-label="Default select example">
+                      {% for team in teams %}
+                      <option value="{{ team.id }}">{{ team.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-12">
+                    <label for="amount" class="form-label">Bid Amount</label>
+                    <input required type="text" name="amount" class="form-control" id="amount" placeholder="Amount">
+                  </div>
+                  <div class="col-12">
+                    <div class="form-check">                      
+                      <label class="form-check-label" for="gridCheck">Sold</label>
+                      <input class="form-check-input" name="is_sold" type="checkbox" id="gridCheck">
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <button type="submit" class="btn btn-dark">Bid</button>
+                  </div>
+                </form>
+            </div>
+          </div>
+{% endblock %}
