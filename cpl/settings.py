@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-yn7=j+iznv#3g4fqfj*-$tx=ews6-$jsm8@5k)-2tr+yda$)i$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.4']
+ALLOWED_HOSTS = ['192.168.1.4', "localhost"]
 
 
 # Application definition
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'import_export',
     'cpl_backend'
 ]
 
@@ -129,4 +130,5 @@ STATICFILES_DIRS = [
 ]
 
 MEDIA_URL = '/media/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'cpl_backend', 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'cpl_backend', 'media')

@@ -10,4 +10,5 @@ urlpatterns = [
     path('bids/', views.list_players_for_bidding, name="to_bid"),
     path('players/<int:id>/bid', views.add_new_bid, name="bids"),
     path('save-bid/', views.save_bid, name='save_bid'),
+    path('search-player/', views.search_player, name='player_search'),
 ]

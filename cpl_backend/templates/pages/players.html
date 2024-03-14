@@ -1,6 +1,14 @@
 {% extends "pages/base.html" %}
 
 {% block content %}
+<div class="input-group" style="margin-bottom: 5px;">
+    <form action="{% url 'player_search' %}">
+        <div class="form-outline">
+            <input type="search" placeholder="Search player" name="search" class="form-control" />
+            </div>
+        </div>
+    </form>
+</div>
 <table class="table table-striped table-dark">
     <thead>
       <tr>

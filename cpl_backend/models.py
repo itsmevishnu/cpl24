@@ -81,7 +81,7 @@ class Bid(models.Model):
 
     team = models.ForeignKey(Team, on_delete=models.CASCADE, blank=True, null=True)
     player = models.ForeignKey(Player, on_delete=models.CASCADE, blank=True, null=True)
-    bid_amount = models.DecimalField(decimal_places=2, max_digits=10)
+    bid_amount = models.FloatField()
     is_sold = models.BooleanField()
     created_at = models.DateField(auto_now=True)
 
@@ -90,23 +90,18 @@ class Bid(models.Model):
     
     def clean(self):
         super().clean()
-
+        next_bid = next_bid_amount(team=self.team, player=self.player)
         if self.bid_amount <= self.player.basic_amount:
             raise ValidationError("Bid amount should be greater than players' basic amount")
         
         if self.player.is_sold:
             raise ValidationError("The player already sold, Choose another players")
 
-        if self.bid_amount >= self.team.balance_amount:
+        if self.bid_amount > self.team.balance_amount:
             raise ValidationError("The bid amount should be less than your Balance amount")
         
-        current_internal_players = Player.objects.filter(is_external=False).count()
-        current_external_players = Player.objects.filter(is_external=True).count()
-        
-        if self.team.balance_amount - self.bid_amount <= (((EXTERNAL_PLAYERS_COUNT - current_external_players) * EXTERNAL_PLAYER_BASIC_AMOUNT )+
-                                        ((INTERNAL_PLAYERS_COUNT - current_internal_players) * INTERNAL_PLAYER_BASIC_AMOUNT) ):
-            raise ValidationError(f"You can not purchase {EXTERNAL_PLAYERS_COUNT} external players \
-                                  and {INTERNAL_PLAYERS_COUNT} internal players after this bid.")
+        if self.bid_amount >= next_bid:
+             raise ValidationError("Bid amount is too high, You can not buy enough players")
 
 
     def save(self, *args, **kwargs):
@@ -134,3 +129,26 @@ def pre_delete_bid(sender, instance, **kwargs):
     instance.team.expended_amount -= instance.bid_amount
     instance.team.save()
         
+def next_bid_amount(team, player):
+    try:
+        team_players = TeamMember.objects.filter(team=team)
+    except Exception as e:
+        raise ValidationError("Unexpected error occured")
+    
+    internal_player_count = team_players.filter(players__is_external=False).count() 
+    external_player_count = team_players.filter(players__is_external=True).count()
+
+    #updated internal and external player count based on the player selected
+    if not player.is_external:
+        internal_player_count += 1
+    else: 
+        external_player_count += 1
+
+    internal_required = INTERNAL_PLAYERS_COUNT - internal_player_count
+    external_required = EXTERNAL_PLAYERS_COUNT - external_player_count
+
+    if internal_required < 0 and external_required < 0: # bidding for extra players
+        return team.balance_amount
+
+    return team.balance_amount - ((internal_required * INTERNAL_PLAYER_BASIC_AMOUNT)+ 
+                                      (external_required * EXTERNAL_PLAYER_BASIC_AMOUNT))
